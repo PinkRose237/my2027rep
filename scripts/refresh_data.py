@@ -231,10 +231,7 @@ def get_elections(house_data, senate_data):
     }
     if len(senate) != 35:
         raise ValueError(f"Expected 35 Senate races, got {len(senate)}")
-    return {
-        "house": house if house_xml is not None else fallback["house"],
-        "senate": senate if senate_xml is not None else fallback["senate"],
-    }
+    return {"house": house, "senate": senate}
 
 
 def name_words(name):
