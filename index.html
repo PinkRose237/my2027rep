@@ -1,0 +1,117 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="Count down to the 120th Congress and find the U.S. House and Senate members who represent your address, now and after the 2026 midterms.">
+  <meta name="theme-color" content="#f8f6f0">
+  <meta name="referrer" content="no-referrer">
+  <title>The Next Congress | Find your representatives</title>
+  <link rel="icon" href="./assets/favicon.svg" type="image/svg+xml">
+  <link rel="preload" href="./assets/instrument-serif.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="stylesheet" href="./styles.css">
+  <script type="module" src="./app.js"></script>
+</head>
+<body>
+  <a class="skip-link" href="#lookup">Skip to address lookup</a>
+  <svg class="symbols" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+    <symbol id="capitol-icon" viewBox="0 0 24 24"><path d="M12 2v3m-2 2h4m-7 6v-1a5 5 0 0 1 10 0v1M4 15h16M3 21h18M6 15v6m4-6v6m4-6v6m4-6v6M6 13h12"/></symbol>
+    <symbol id="pin" viewBox="0 0 24 24"><path d="M20 10c0 5-8 11-8 11S4 15 4 10a8 8 0 1 1 16 0Z"/><circle cx="12" cy="10" r="2.5"/></symbol>
+    <symbol id="calendar" viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M16 3v4M8 3v4M3 10h18"/></symbol>
+    <symbol id="arrow" viewBox="0 0 24 24"><path d="M4 12h15m-6-6 6 6-6 6"/></symbol>
+    <symbol id="external" viewBox="0 0 24 24"><path d="M7 17 17 7M7 7h10v10"/></symbol>
+    <symbol id="lock" viewBox="0 0 24 24"><rect x="5" y="10" width="14" height="11" rx="2"/><path d="M8 10V7a4 4 0 1 1 8 0v3m-4 4v3"/></symbol>
+    <symbol id="phone" viewBox="0 0 24 24"><path d="M8 3 5 4a3 3 0 0 0-2 3c1 7 7 13 14 14a3 3 0 0 0 3-2l1-3-5-2-2 2c-3-1-5-3-6-6l2-2-2-5Z"/></symbol>
+    <symbol id="mail" viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="m3 7 9 6 9-6"/></symbol>
+    <symbol id="chevron" viewBox="0 0 24 24"><path d="m6 9 6 6 6-6"/></symbol>
+  </svg>
+
+  <header class="site-header">
+    <div class="shell header-inner">
+      <a class="brand" href="#top">
+        <span class="brand-mark"><svg class="icon" aria-hidden="true"><use href="#capitol-icon"/></svg></span>
+        The Next Congress
+      </a>
+      <nav aria-label="Main navigation">
+        <a href="#lookup">Find my reps</a>
+        <a href="#sources">Data sources</a>
+      </nav>
+    </div>
+  </header>
+
+  <main id="top">
+    <section class="hero shell" aria-labelledby="hero-title">
+      <div class="hero-text">
+        <div class="eyebrow"><span class="rule" aria-hidden="true"></span> THE 120TH UNITED STATES CONGRESS</div>
+        <h1 id="hero-title">The next Congress<br><em id="hero-emphasis">starts in…</em></h1>
+        <p class="hero-date"><svg class="icon" aria-hidden="true"><use href="#calendar"/></svg><time datetime="2027-01-03T12:00:00-05:00">January 3, 2027 at noon ET</time></p>
+
+        <div class="countdown" role="timer" aria-label="Time until the 120th Congress begins">
+          <div><span data-time="days">--</span><small>Days</small></div>
+          <div><span data-time="hours">--</span><small>Hours</small></div>
+          <div><span data-time="minutes">--</span><small>Minutes</small></div>
+          <div><span data-time="seconds">--</span><small>Seconds</small></div>
+        </div>
+      </div>
+
+      <figure class="hero-figure">
+        <img src="./assets/capitol.webp" alt="The U.S. Capitol illuminated at dusk" width="1350" height="792" fetchpriority="high">
+        <figcaption><span></span> U.S. CAPITOL <span class="caption-divider" aria-hidden="true"></span> WASHINGTON, D.C.</figcaption>
+      </figure>
+    </section>
+
+    <section id="lookup" class="lookup" aria-labelledby="lookup-title">
+      <div class="shell">
+        <div class="lookup-card">
+          <div class="lookup-heading">
+            <span class="lookup-mark"><svg class="icon" aria-hidden="true"><use href="#pin"/></svg></span>
+            <div>
+              <h2 id="lookup-title">Find your representatives</h2>
+              <p>See who represents you in the U.S. House and Senate now and in the next Congress.</p>
+            </div>
+          </div>
+          <form id="address-form" autocomplete="on">
+            <label for="address">U.S. street address</label>
+            <div class="search-row">
+              <div class="address-wrap">
+                <svg class="icon address-pin" aria-hidden="true"><use href="#pin"/></svg>
+                <input id="address" name="address" type="text" required maxlength="250" autocomplete="street-address" spellcheck="false" placeholder="Street address, city, and state" role="combobox" aria-autocomplete="list" aria-expanded="false" aria-controls="suggestions" aria-describedby="privacy">
+                <ul id="suggestions" class="suggestions" role="listbox" aria-label="Suggested addresses" hidden></ul>
+              </div>
+              <button class="primary-button" type="submit">Find my reps <svg class="icon" aria-hidden="true"><use href="#arrow"/></svg></button>
+            </div>
+            <div class="form-meta">
+              <p id="privacy"><svg class="icon" aria-hidden="true"><use href="#lock"/></svg> Esri looks up your address. This site doesn’t save it.</p>
+              <button id="example" class="text-button" type="button">Try an example <svg class="icon" aria-hidden="true"><use href="#external"/></svg></button>
+            </div>
+            <p id="lookup-status" class="lookup-status" role="status" hidden></p>
+            <noscript><p class="lookup-status error">Enable JavaScript to look up an address and run the countdown.</p></noscript>
+          </form>
+        </div>
+
+        <section id="results" class="results" aria-labelledby="results-title" hidden></section>
+      </div>
+    </section>
+
+    <footer id="sources" class="site-footer">
+      <div class="shell">
+        <details>
+          <summary>Data sources and how it works <svg class="icon" aria-hidden="true"><use href="#chevron"/></svg></summary>
+          <div class="source-content">
+            <p>The 120th Congress’s terms begin at noon Eastern on January 3, 2027. <a href="https://constitution.congress.gov/constitution/amendment-20/">Twentieth Amendment</a></p>
+            <p>Esri matches your address, and Census TIGERweb assigns House districts for each Congress. Missouri used its 119th Congress map for the 2026 general election. <a href="https://tigerweb.geo.census.gov/tigerweb/">Census TIGERweb</a> · <a href="https://www.census.gov/programs-surveys/decennial-census/about/rdo/congressional-districts.120th_Congress.html">2026 district notes</a></p>
+            <p>Office contacts come from the House Clerk, the U.S. Senate and the Congress Legislators project. <a href="https://clerk.house.gov/Members">House directory</a> · <a href="https://www.senate.gov/senators/contact/">Senate directory</a> · <a href="https://github.com/unitedstates/congress-legislators">Congress Legislators</a></p>
+            <p>Election calls come from civicAPI and may precede official certification. Campaign links come from Votewiser or candidates’ websites. <a href="https://civicapi.org/">civicAPI</a> · <a href="https://votewiser.com/">Votewiser</a></p>
+            <p><a href="https://commons.wikimedia.org/wiki/File:Capitol_at_Dusk_View_from_Library_of_Congress_Jefferson_Building_(14144445175).jpg">Capitol photograph by the Architect of the Capitol</a></p>
+          </div>
+        </details>
+        <div class="footer-bottom">
+          <a class="brand" href="#top">The Next Congress</a>
+          <p>An independent, nonpartisan civic tool</p>
+          <a href="https://github.com/PinkRose237/my2027rep">Source code <svg class="icon" aria-hidden="true"><use href="#external"/></svg></a>
+        </div>
+      </div>
+    </footer>
+  </main>
+</body>
+</html>

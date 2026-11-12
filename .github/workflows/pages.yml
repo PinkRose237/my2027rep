@@ -1,0 +1,45 @@
+name: Publish GitHub Pages
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+  schedule:
+    - cron: '23 */6 * * *'
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: github-pages
+  cancel-in-progress: false
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deploy.outputs.page_url }}
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/configure-pages@v6
+      - name: Validate and stage the static site
+        run: |
+          node --check app.js
+          python3 -m json.tool data/congress.json > /dev/null
+          mkdir _site
+          cp index.html styles.css app.js .nojekyll _site/
+          cp -R assets data _site/
+      - name: Refresh congressional data
+        if: github.event_name != 'push'
+        run: |
+          python3 scripts/refresh_data.py
+          cp data/congress.json _site/data/congress.json
+      - uses: actions/upload-pages-artifact@v5
+        with:
+          path: _site
+      - name: Deploy
+        id: deploy
+        uses: actions/deploy-pages@v5
