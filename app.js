@@ -385,7 +385,7 @@ function render(point, current, upcoming, data) {
       servingCard(seat, data.roster[seat.chamber][seat.key], termStarted)),
   );
   upcomingPanel.append(
-    element('p', 'eyebrow', termStarted ? 'TERM BEGAN JANUARY 3, 2027' : 'TERMS BEGIN JANUARY 3, 2027'),
+    element('p', 'eyebrow', termStarted ? 'TERM BEGAN JANUARY 3, 2027' : 'STARTS JANUARY 3, 2027'),
     element('h3', '', '120th Congress'),
     ...congressionalSeats(upcoming, data).map(seat => upcomingCard(seat, data, termStarted)),
   );
@@ -400,7 +400,7 @@ function render(point, current, upcoming, data) {
   }
   const source = element('p', 'results-source',
     `Election results checked ${easternDate.format(new Date(data.checkedAt))}. Race calls can precede state certification. `);
-  source.append(link('Data sources', 'https://civicapi.org/'));
+  source.append(link('civicAPI', 'https://civicapi.org/'));
   results.append(panels, source);
   results.hidden = false;
   title.focus({ preventScroll: true });

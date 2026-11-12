@@ -42,7 +42,6 @@ CAMPAIGN_LINKS = {
     ("CA-38", "Hilda Solis"): "https://www.hildasolis.com/",
     ("GA-13", "Jasmine Clark"): "https://www.jasmine4ga.com/",
     ("MO-02", "Fred Wellman"): "https://www.wellmanformo.com/",
-    ("NY-18", "Pat Ryan"): "https://www.patryanforcongress.com/",
     ("TX-30", "Frederick Haynes III"): "https://www.haynesforcongress.com/",
 }
 PARTIES = {"D": "Democratic", "Democrat": "Democratic", "R": "Republican", "I": "Independent"}
@@ -240,10 +239,11 @@ def add_office(key, result, offices):
         return
     state = key.split("-")[0]
     matches = []
+    candidate = "Patrick Ryan" if key == "NY-18" and result["name"] == "Pat Ryan" else result["name"]
     for seat, office in offices.items():
         if seat.split("-")[0] != state or not office.get("name") or result["party"] != office.get("party"):
             continue
-        score = max(match_score(result["name"], office["name"]), match_score(result["name"], office.get("alias")))
+        score = max(match_score(candidate, office["name"]), match_score(candidate, office.get("alias")))
         if score:
             matches.append((score, seat == key, office))
     matches.sort(key=lambda entry: entry[:2], reverse=True)
