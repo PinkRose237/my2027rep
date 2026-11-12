@@ -73,6 +73,14 @@ def get_json(url):
     return json.loads(fetch(url))
 
 
+def optional_xml(url):
+    try:
+        return ET.fromstring(fetch(url))
+    except (URLError, TimeoutError, ET.ParseError) as error:
+        print(f"Official directory unavailable at {url}: {error}")
+        return None
+
+
 def http_url(url):
     if isinstance(url, str) and urlparse(url).scheme == "https" and urlparse(url).hostname:
         return url
@@ -89,10 +97,38 @@ def house_key(state, district):
     return f"{state}-{0 if state in AT_LARGE else int(district):02d}"
 
 
-def get_roster(legislators, house_xml, senate_xml):
+def project_roster(legislators, previous):
+    # Reuse verified office details only while the same person holds the seat.
+    roster = {"house": {}, "senate": {}}
+    for person in legislators:
+        term = person["terms"][-1]
+        state = term["state"]
+        chamber = "house" if term["type"] == "rep" else "senate"
+        key = house_key(state, term["district"]) if chamber == "house" else f"{state}-{term['class']}"
+        bio = person["id"]["bioguide"]
+        name = person["name"]
+        prior = previous.get(chamber, {}).get(key, {})
+        official = prior if prior.get("id") == bio else {}
+        roster[chamber][key] = compact({
+            "id": bio, "name": name.get("official_full") or f"{name['first']} {name['last']}",
+            "alias": f"{name['first']} {name['last']}",
+            "party": PARTIES.get(term["party"], term["party"]),
+            "website": http_url(term.get("url")) or official.get("website"),
+            "contact": http_url(term.get("contact_form")) or official.get("contact"),
+            "phone": term.get("phone") or official.get("phone"),
+            "address": term.get("address") or official.get("address"),
+        })
+    for key, office in previous.get("house", {}).items():
+        if key not in roster["house"]:
+            roster["house"][key] = {"vacant": True, **({"phone": office["phone"]} if office.get("phone") else {})}
+    return roster
+
+
+def get_roster(legislators, house_xml, senate_xml, previous):
+    fallback = project_roster(legislators, previous)
     terms = {p["id"]["bioguide"]: (p["name"], p["terms"][-1]) for p in legislators}
     house = {}
-    for member in house_xml.findall("./members/member"):
+    for member in house_xml.findall("./members/member") if house_xml is not None else []:
         code = member.findtext("statedistrict")
         info = member.find("member-info")
         if not code or info is None:
@@ -126,7 +162,7 @@ def get_roster(legislators, house_xml, senate_xml):
                 })
 
     senate = {}
-    for member in senate_xml.findall("./member"):
+    for member in senate_xml.findall("./member") if senate_xml is not None else []:
         state = member.findtext("state")
         class_number = {"Class I": 1, "Class II": 2, "Class III": 3}.get(member.findtext("class"))
         if not state or not class_number:
@@ -143,7 +179,10 @@ def get_roster(legislators, house_xml, senate_xml):
             "phone": member.findtext("phone") or term.get("phone"),
             "address": member.findtext("address") or term.get("address"),
         })
-    return {"house": house, "senate": senate}
+    return {
+        "house": house if house_xml is not None else fallback["house"],
+        "senate": senate if senate_xml is not None else fallback["senate"],
+    }
 
 
 def race(region):
@@ -192,7 +231,10 @@ def get_elections(house_data, senate_data):
     }
     if len(senate) != 35:
         raise ValueError(f"Expected 35 Senate races, got {len(senate)}")
-    return {"house": house, "senate": senate}
+    return {
+        "house": house if house_xml is not None else fallback["house"],
+        "senate": senate if senate_xml is not None else fallback["senate"],
+    }
 
 
 def name_words(name):
@@ -332,21 +374,25 @@ def main():
     args = parser.parse_args()
     previous = json.loads(DATA.read_text()) if DATA.exists() else {}
     with ThreadPoolExecutor(max_workers=5) as executor:
-        legislators, house_source, senate_source, house_results, senate_results = [
+        legislators, house_xml, senate_xml, house_results, senate_results = [
             request.result() for request in (
                 executor.submit(get_json, LEGISLATORS),
-                executor.submit(fetch, HOUSE_CLERK),
-                executor.submit(fetch, SENATE_DIRECTORY),
+                executor.submit(optional_xml, HOUSE_CLERK),
+                executor.submit(optional_xml, SENATE_DIRECTORY),
                 executor.submit(get_json, f"{CIVIC_API}/87524"),
                 executor.submit(get_json, f"{CIVIC_API}/87528"),
             )
         ]
-    house_xml = ET.fromstring(house_source)
     now = datetime.now(timezone.utc)
-    latest = get_roster(legislators, house_xml, ET.fromstring(senate_source))
+    latest = get_roster(legislators, house_xml, senate_xml, previous.get("roster", {}))
     if len(latest["house"]) != 441 or len(latest["senate"]) != 100:
         raise ValueError(f"Incomplete office directories: {len(latest['house'])} House, {len(latest['senate'])} Senate")
-    term = int(house_xml.findtext("title-info/congress-num"))
+    if house_xml is not None:
+        term = int(house_xml.findtext("title-info/congress-num"))
+    else:
+        new_terms = sum(person["terms"][-1]["type"] == "rep" and
+                        person["terms"][-1]["start"] >= "2027-01-03" for person in legislators)
+        term = 120 if new_terms > 200 else 119
     roster = latest if term == 119 and now < START else previous.get("roster")
     if roster is None:
         raise ValueError("The archived 119th Congress roster is missing.")
